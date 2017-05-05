@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby -w
+# -*- coding: utf-8 -*-
+# :markup: markdown
+
+# The `countlines` utility displays the number of lines contained in
+# all files those have specified type in the input directory.  When no
+# directory is specified, the current directory is used as target.
+#
+# Type must be specified with an extension string for a file, such as
+# `rb` for a ruby program file, `md` for a text in the markdown
+# format, and so on.
+
+VERSION = '0.1.2'
+RELEASE = '2017-04-14'
+
+def find_all_files(top_path, type)
+  Dir.chdir(top_path) { |p| Dir.glob("**/*.#{type}") }
+end
+
+def count_lines(filepath)
+  File.readlines(filepath).size
+end
+
+require 'optparse'
+
+class Options
+  attr_accessor :verbose
+
+  def initialize
+    self.verbose = false
+  end
+
+  def define_options(parser)
+    parser.banner = "Usage: #{parser.program_name} [options] type [directory]"
+    parser.separator ''
+    parser.separator 'Specific options:'
+    parser.version = VERSION
+    parser.release = RELEASE
+    boolean_verbose_option(parser)
+    parser.on_tail('-V', '--version', 'show version') do
+      $stderr.puts parser.ver
+      exit
+    end
+    parser.on_tail('-h', '--help', 'show this message') do
+      $stderr.puts parser
+      exit
+    end
+  end
+
+  def boolean_verbose_option(parser)
+    parser.on('-v', '--[no-]verbose', 'show count for each file') do |v|
+      self.verbose = v
+    end
+  end
+end
+
+options = Options.new
+OptionParser.new do |parser|
+  options.define_options(parser)
+  parser.parse!(ARGV)
+end
+
+type = ARGV.shift
+if type.nil?
+  $stderr.puts 'No type is specified.'
+  exit 1
+end
+
+target_dir = File.expand_path(ARGV.shift || '.')
+unless FileTest.directory?(target_dir)
+  $stderr.puts "No such directory: #{target_dir}"
+  exit 1
+end
+
+puts target_dir
+
+total_lines = 0
+find_all_files(target_dir, type).each do |name|
+  pathname = File.expand_path(name, target_dir)
+  lines = count_lines(pathname)
+  total_lines += lines
+  if options.verbose
+    puts "[%4d] #{name}" % lines
+  end
+end
+
+puts "Total: #{total_lines} lines"
