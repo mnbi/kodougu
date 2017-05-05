@@ -3,85 +3,86 @@
 # :markup: markdown
 
 # The `countlines` utility displays the number of lines contained in
-# all files those have specified type in the input directory.  When no
-# directory is specified, the current directory is used as target.
+# all files those have specified type in the target directory.  When
+# no directory is specified, the current directory is used as target.
 #
 # Type must be specified with an extension string for a file, such as
 # `rb` for a ruby program file, `md` for a text in the markdown
 # format, and so on.
 
-VERSION = '0.1.2'
-RELEASE = '2017-04-14'
+require 'slop'
+require "kodougu"
 
-def find_all_files(top_path, type)
-  Dir.chdir(top_path) { |p| Dir.glob("**/*.#{type}") }
-end
+class App
+  VERSION = '0.1.3'
 
-def count_lines(filepath)
-  File.readlines(filepath).size
-end
-
-require 'optparse'
-
-class Options
-  attr_accessor :verbose
-
-  def initialize
-    self.verbose = false
+  def name
+    File.basename($PROGRAM_NAME)
   end
 
-  def define_options(parser)
-    parser.banner = "Usage: #{parser.program_name} [options] type [directory]"
-    parser.separator ''
-    parser.separator 'Specific options:'
-    parser.version = VERSION
-    parser.release = RELEASE
-    boolean_verbose_option(parser)
-    parser.on_tail('-V', '--version', 'show version') do
-      $stderr.puts parser.ver
-      exit
-    end
-    parser.on_tail('-h', '--help', 'show this message') do
-      $stderr.puts parser
-      exit
+  def banner
+    "Usage: #{name} [options] type ..."
+  end
+
+  def version
+    "#{name} version #{VERSION} (kodougu #{Kodougu::VERSION})"
+  end
+
+  attr_reader :opts
+
+  def initialize(args)
+    @opts = Slop.parse(args, banner: banner) do |o|
+      o.string '-d', '--directory', 'specify the target directory'
+      o.bool '-v', '--verbose', 'show count value for each file'
+      o.on '-V', '--version', 'print version' do
+        puts version
+        exit
+      end
+      o.on '-h', '--help', 'show help' do
+        puts o
+        exit
+      end
     end
   end
 
-  def boolean_verbose_option(parser)
-    parser.on('-v', '--[no-]verbose', 'show count for each file') do |v|
-      self.verbose = v
+  def execute
+    types = @opts.arguments
+    if types.empty?
+      $stderr.puts 'No type is specified.'
+      exit 1
     end
+
+    target_dir = File.expand_path(@opts[:directory] || '.')
+    unless FileTest.directory?(target_dir)
+      $stderr.puts "No such directory: #{target_dir}"
+      exit 1
+    end
+
+    puts target_dir
+
+    total_lines = 0
+    types.each do |type|
+      find_all_files(target_dir, type).each do |name|
+        pathname = File.expand_path(name, target_dir)
+        lines = count_lines(pathname)
+        total_lines += lines
+        puts "[%4d] #{name}" % lines if @opts.verbose?
+      end
+    end
+
+    puts "Total: #{total_lines} lines"
+  end
+
+  private
+  def find_all_files(top_path, type)
+    Dir.chdir(top_path) { |p| Dir.glob("**/*.#{type}") }
+  end
+
+  def count_lines(filepath)
+    File.readlines(filepath).size
   end
 end
 
-options = Options.new
-OptionParser.new do |parser|
-  options.define_options(parser)
-  parser.parse!(ARGV)
-end
+app = App.new(ARGV)
+app.execute
 
-type = ARGV.shift
-if type.nil?
-  $stderr.puts 'No type is specified.'
-  exit 1
-end
-
-target_dir = File.expand_path(ARGV.shift || '.')
-unless FileTest.directory?(target_dir)
-  $stderr.puts "No such directory: #{target_dir}"
-  exit 1
-end
-
-puts target_dir
-
-total_lines = 0
-find_all_files(target_dir, type).each do |name|
-  pathname = File.expand_path(name, target_dir)
-  lines = count_lines(pathname)
-  total_lines += lines
-  if options.verbose
-    puts "[%4d] #{name}" % lines
-  end
-end
-
-puts "Total: #{total_lines} lines"
