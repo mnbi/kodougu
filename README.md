@@ -4,17 +4,7 @@ The word, "kodougu" means small tools in Japanese.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'kodougu'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
+Install it as:
 
     $ gem install kodougu
 
