@@ -1,5 +1,7 @@
 # Kodougu
 
+[![Build Status](https://travis-ci.org/mnbi/kodougu.svg?branch=master)](https://travis-ci.org/mnbi/kodougu)
+
 The word, "kodougu" means small tools in Japanese.
 
 ## Installation
