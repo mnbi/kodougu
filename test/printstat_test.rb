@@ -43,4 +43,31 @@ class PrintstatTest < Test::Unit::TestCase
     assert_equal 0, status.exitstatus
     assert_false o_str.empty?
   end
+
+  def test_that_it_correctly_prints_stats_of_sample_dat
+    sample_file = File.expand_path('sample.dat', FIXTURE_PATH)
+    cmd = "#{BUNDLE_EXEC} \'#{sample_file}\'"
+    o_str, status = Open3.capture2(cmd)
+    assert_equal 0, status.exitstatus
+    results = make_hash(o_str)
+    st = File::Stat.new(sample_file)
+    %i[atime mtime ctime birthtime size].each do |sym|
+      if st.respond_to?(sym)
+        assert_equal results[sym], st.public_send(sym).to_s
+      end
+    end
+  end
+
+  private
+  def make_hash(str)
+    lines = str.split("\n")[1..-1] # ignore the 1st line of the output
+    pairs = lines.map do |l|
+      md = l.match(/\A\s*([^:]+):\s(.*)\z/)
+      [md[1], md[2]]
+    end
+    pairs.reduce({}) do |r, pair|
+      k = pair.first.lstrip.intern
+      r.update(k => pair.last)
+    end
+  end
 end
