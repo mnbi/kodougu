@@ -1,0 +1,110 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+# :markup: markdown
+
+# The `cmptstat` utility compares stats of two directory entries. It
+# does not compare contents.
+
+require 'slop'
+require "kodougu"
+
+class StatHash
+  def initialize(st)
+    @st = st
+    @keys = %i[dev mode nlink ino uid gid rdev atime mtime ctime birthtime size blocks blksize].select { |i| @st.respond_to?(i) }
+  end
+
+  def empty?
+    false
+  end
+
+  def key?(key)
+    @st.respond_to?(key.intern)
+  end
+
+  def keys
+    @keys
+  end
+
+  def [](key)
+    @st.public_send(key.intern) if key?(key)
+  end
+
+  def each(&block)
+    if block_given?
+      @keys.each do |key|
+        yield key, self[key]
+      end
+    else
+      to_enum(__method__) { @keys.size }
+    end
+  end
+end
+
+class App
+  VERSION = '0.1.0'
+
+  def name
+    File.basename($PROGRAM_NAME)
+  end
+
+  def version
+    "#{name} version #{VERSION} (kodougu #{Kodougu::VERSION})"
+  end
+
+  def banner
+    "Usage #{name} entry1 entry2"
+  end
+
+  def initialize(args)
+    @opts = Slop.parse(args, banner: banner) do |o|
+      parse_version(o)
+      parse_help(o)
+    end
+    @a = args.shift
+    @b = args.shift
+  end
+
+  def execute
+    if @a && @b
+      st_a = File::Stat.new(File.expand_path(@a))
+      st_b = File::Stat.new(File.expand_path(@b))
+
+      sth_a = StatHash.new(st_a)
+      sth_b = StatHash.new(st_b)
+      diff = Kodougu::DiffHash.new(sth_a, sth_b)
+
+      stp_a = Kodougu::StatPrinter.new(st_a)
+      stp_b = Kodougu::StatPrinter.new(st_b)
+
+      max_length = diff.keys.map(&:to_s).map(&:length).max
+      prefix = ' ' * max_length
+
+      diff.each do |k, v|
+        label = (prefix + k.to_s)[-(max_length)..-1]
+        puts "#{label}: #{stp_a.public_send(k)} -> #{stp_b.public_send(k)}"
+      end
+    else
+      puts banner
+      exit 1
+    end
+  end
+
+  private
+  def parse_version(o)
+    o.on '-V', '--version', 'print version' do
+      puts version
+      exit
+    end
+  end
+
+  def parse_help(o)
+    o.on '-h', '--help', 'show help' do
+      puts o
+      exit
+    end
+  end
+end
+
+app = App.new(ARGV)
+app.execute
