@@ -1,0 +1,152 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+# :markup: markdown
+
+# The `printstat` utility displays all entries of stats for the
+# specified directory entry. When no argument is specified, the
+# current directory itself is used as a target.
+
+require 'slop'
+require "kodougu"
+
+class StatPrinter
+  def initialize(st)
+    @st = st
+  end
+
+  def dev
+    print_hex(@st.dev)
+  end
+
+  def mode
+    print_oct(@st.mode)
+  end
+
+  def nlink
+    print_decimal(@st.nlink)
+  end
+
+  def ino
+    print_decimal(@st.ino)
+  end
+
+  def uid
+    print_decimal(@st.uid)
+  end
+
+  def gid
+    print_decimal(@st.gid)
+  end
+
+  def rdev
+    print_hex(@st.rdev) + " (#{@st.rdev_major},  #{@st.rdev_minor})"
+  end
+
+  def atime
+    print_time(@st.atime)
+  end
+
+  def mtime
+    print_time(@st.mtime)
+  end
+
+  def ctime
+    print_time(@st.ctime)
+  end
+
+  def birthtime
+    print_time(@st.birthtime)
+  end
+
+  def size
+    print_decimal(@st.size)
+  end
+
+  def blocks
+    print_decimal(@st.blocks)
+  end
+
+  def blksize
+    print_decimal(@st.blksize)
+  end
+
+  private
+  def print_oct(num)
+    "%o" % num
+  end
+
+  def print_decimal(num)
+    r = ''
+    head = num.to_s
+    until head.empty?
+      tail = head[-3..-1]
+      r = tail ? "#{tail},#{r}" : "#{head},#{r}"
+      head = head[0..-4]
+    end
+    r.sub(/,\z/, '')
+  end
+
+  def print_hex(num)
+    "%x" % num
+  end
+
+  def print_time(time)
+    time
+  end
+end
+
+class App
+  VERSION = '0.1.0'
+
+  def name
+    File.basename($PROGRAM_NAME)
+  end
+
+  def banner
+    "Usage: #{name} entry"
+  end
+
+  def version
+    "#{name} version #{VERSION} (kodougu #{Kodougu::VERSION})"
+  end
+
+  def initialize(args)
+    @opts = Slop.parse(args, banner: banner) do |o|
+      o.on '-V', '--version', 'print version' do
+        puts version
+        exit
+      end
+      o.on '-h', '--help', 'show help' do
+        puts o
+        exit
+      end
+    end
+    @target = File.expand_path(args.shift || '.')
+  end
+
+  def execute
+    unless FileTest.exist?(@target)
+      $stderr.puts "No such entry: #{@target}"
+      exit 1
+    end
+
+    st = File::Stat.new(@target)
+    puts "#{@target}:"
+
+    printer = StatPrinter.new(st)
+    syms = available_stats(st)
+    max_length = syms.map(&:to_s).map(&:length).max
+    prefix = ' ' * max_length
+    syms.each do |sym|
+      label = (prefix + sym.to_s)[-(max_length)..-1]
+      puts "#{label}: #{printer.public_send(sym)}"
+    end
+  end
+
+  def available_stats(st)
+    %i[dev mode nlink ino uid gid rdev atime mtime ctime birthtime size blocks blksize].select { |sym| st.respond_to?(sym) }
+  end
+end
+
+app = App.new(ARGV)
+app.execute
