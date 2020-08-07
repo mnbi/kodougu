@@ -1,0 +1,25 @@
+PATH
+  remote: .
+  specs:
+    kodougu (0.2.1)
+      slop (~> 4.4)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    power_assert (1.2.0)
+    rake (12.3.3)
+    slop (4.8.2)
+    test-unit (3.3.6)
+      power_assert
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  kodougu!
+  rake (~> 12.0)
+  test-unit (~> 3.2)
+
+BUNDLED WITH
+   2.1.4
