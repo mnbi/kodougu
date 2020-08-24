@@ -1,3 +1,6 @@
+*NOTE:* This repository is intended to be used for my personal
+training to be familiar with using git and GitHub.
+
 # Kodougu
 
 [![Build Status](https://travis-ci.org/mnbi/kodougu.svg?branch=master)](https://travis-ci.org/mnbi/kodougu)
@@ -6,9 +9,14 @@ The word, "kodougu" means small tools in Japanese.
 
 ## Installation
 
-Install it as:
+At first, build the gem package like these commands:
 
-    $ gem install kodougu
+    $ bundle install
+    $ rake build
+
+Now, the new gem made in the `pkg` directory.  Install it as:
+
+    $ gem install pkg/kodougu-0.2.0.gem
 
 ## Usage
 
