@@ -10,11 +10,16 @@
 # `rb` for a ruby program file, `md` for a text in the markdown
 # format, and so on.
 
+require 'open3'
 require 'slop'
 require "kodougu"
 
 class App
-  VERSION = '0.1.3'
+  VERSION = '0.1.4'
+  FILE_CMD = [
+    '/usr/local/bin/file',
+    '/usr/bin/file'
+  ].find {|p| File.exist?(p) }
 
   def name
     File.basename($PROGRAM_NAME)
@@ -46,8 +51,8 @@ class App
   end
 
   def execute
-    types = @opts.arguments
-    if types.empty?
+    exts = @opts.arguments
+    if exts.empty?
       $stderr.puts 'No type is specified.'
       exit 1
     end
@@ -61,25 +66,70 @@ class App
     puts target_dir
 
     total_lines = 0
-    types.each do |type|
-      find_all_files(target_dir, type).each do |name|
-        pathname = File.expand_path(name, target_dir)
-        lines = count_lines(pathname)
-        total_lines += lines
-        puts "[%4d] #{name}" % lines if @opts.verbose?
-      end
-    end
+    find_all_files(target_dir, exts).each { |name|
+      pathname = File.expand_path(name, target_dir)
+      lines = count_lines(pathname)
+      total_lines += lines
+      puts "[%4d] #{name}" % lines if @opts.verbose?
+    }
 
     puts "Total: #{total_lines} lines"
   end
 
   private
-  def find_all_files(top_path, type)
-    Dir.chdir(top_path) { |p| Dir.glob("**/*.#{type}") }
+  def find_all_files(top_path, exts)
+    all_files = Dir.chdir(top_path) { |p| Dir.glob("**/*") }
+    selected = []
+    no_ext = []
+    all_files.each {|name|
+      abs_path = File.expand_path(name, top_path)
+      ext = File.extname(name).delete_prefix(".")
+      if exts.include?(ext)
+        selected.push(abs_path)
+      elsif ext.empty?
+        no_ext.push(abs_path)
+      end
+    }
+
+    results = nil
+    Open3.pipeline_rw([FILE_CMD, '--mime-type', '-f', '-']) { |i, o, t|
+      no_ext.each { |f| i.puts(f) }
+      i.close
+      results = o.readlines
+      t.join
+    }
+
+    results.each { |output_str|
+      path, mtype = output_str.chomp.split(/:\s+/)
+      selected.push(path) if ext_match?(mtype, exts)
+    }
+
+    selected
   end
 
   def count_lines(filepath)
     File.readlines(filepath).size
+  end
+
+  EXTS_MAP = {
+    :shellscript => ['sh'],
+    :python => ['py'],
+    :ruby => ['rb', 'ruby'] 
+  }  
+
+  def ext_match?(mtype, exts)
+    top, sub = mtype.split('/')
+    # counts text file(s) only
+    return false unless top == 'text'
+    # handles 'text/plain' as same as those have 'txt' as
+    # their extension
+    return true if sub == 'plain' && exts.include?('txt')
+
+    md = /^x-([\w-]+)/.match(sub)
+    return false unless md
+
+    exec_lang = md[1].to_sym
+    !exts.intersection(EXTS_MAP[exec_lang].to_a).empty?
   end
 end
 
