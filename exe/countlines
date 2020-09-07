@@ -10,11 +10,16 @@
 # `rb` for a ruby program file, `md` for a text in the markdown
 # format, and so on.
 
+require 'open3'
 require 'slop'
 require "kodougu"
 
 class App
-  VERSION = '0.1.3'
+  VERSION = '0.1.4'
+  FILE_CMD = [
+    '/usr/local/bin/file',
+    '/usr/bin/file'
+  ].find {|p| File.exist?(p) }
 
   def name
     File.basename($PROGRAM_NAME)
@@ -46,8 +51,8 @@ class App
   end
 
   def execute
-    types = @opts.arguments
-    if types.empty?
+    exts = @opts.arguments
+    if exts.empty?
       $stderr.puts 'No type is specified.'
       exit 1
     end
@@ -61,21 +66,20 @@ class App
     puts target_dir
 
     total_lines = 0
-    types.each do |type|
-      find_all_files(target_dir, type).each do |name|
-        pathname = File.expand_path(name, target_dir)
-        lines = count_lines(pathname)
-        total_lines += lines
-        puts "[%4d] #{name}" % lines if @opts.verbose?
-      end
-    end
+    find_all_files(target_dir, exts).each { |name|
+      pathname = File.expand_path(name, target_dir)
+      lines = count_lines(pathname)
+      total_lines += lines
+      puts "[%4d] #{name}" % lines if @opts.verbose?
+    }
 
     puts "Total: #{total_lines} lines"
   end
 
   private
-  def find_all_files(top_path, type)
-    Dir.chdir(top_path) { |p| Dir.glob("**/*.#{type}") }
+  def find_all_files(top_path, exts)
+    all_files = Kodougu::FileSet.new(top_path)
+    all_files.match(exts)
   end
 
   def count_lines(filepath)
