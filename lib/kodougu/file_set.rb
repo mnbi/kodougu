@@ -32,6 +32,8 @@ module Kodougu
 
     private
     def check_type(files, exts)
+      return [] if files.nil? || files.empty?
+
       results = []
       output = []
 
@@ -58,7 +60,7 @@ module Kodougu
     }  
 
     def ext_match?(mtype, exts)
-      top, sub = mtype.split('/')
+      sub = mtype.split('/')[1]
       md = /^x-([\w-]+)/.match(sub)
       return false unless md
 
