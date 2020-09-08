@@ -18,6 +18,15 @@ Now, the new gem made in the `pkg` directory.  Install it as:
 
     $ gem install pkg/kodougu-0.2.0.gem
 
+## Known Issues
+
+Some tests fails during Travis CI build process when no OS type is
+specified.  In the build log, the default OS to build is Linux.  On
+the other hand, I use macOS High Sierra (10.13.6).  In my environment,
+all tests have passed.
+
+To avoid build failure, I put a line to specify OS type into `.travis.yml`.
+
 ## Usage
 
 TODO: Write usage instructions here
