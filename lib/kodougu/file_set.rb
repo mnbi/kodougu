@@ -13,6 +13,8 @@ module Kodougu
 
       names.each { |n|
         abs = File.expand_path(n, top_path)
+        # skip a name if it represents a directory
+        next if FileTest.directory?(abs)
         ext = File.extname(n).delete_prefix('.')
         ext = :no_ext if ext.empty?
         if @files.key?(ext)
@@ -56,8 +58,8 @@ module Kodougu
       :shellscript => ['sh'],
       :perl => ['pl'],
       :python => ['py'],
-      :ruby => ['rb'] 
-    }  
+      :ruby => ['rb']
+    }
 
     def ext_match?(mtype, exts)
       sub = mtype.split('/')[1]
