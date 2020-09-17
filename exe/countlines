@@ -15,7 +15,7 @@ require 'slop'
 require "kodougu"
 
 class App
-  VERSION = '0.1.5'
+  VERSION = '0.1.6'
   FILE_CMD = [
     '/usr/local/bin/file',
     '/usr/bin/file'

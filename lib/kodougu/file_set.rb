@@ -67,6 +67,7 @@ module Kodougu
       return false unless md
 
       exec_lang = md[1].to_sym
+      return false if EXTS_MAP[exec_lang].nil?
       !exts.intersection(EXTS_MAP[exec_lang]).empty?
     end
   end
