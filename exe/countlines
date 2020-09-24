@@ -15,7 +15,7 @@ require 'slop'
 require "kodougu"
 
 class App
-  VERSION = '0.1.6'
+  VERSION = '0.1.7'
   FILE_CMD = [
     '/usr/local/bin/file',
     '/usr/bin/file'
@@ -70,7 +70,8 @@ class App
       pathname = File.expand_path(name, target_dir)
       lines = count_lines(pathname)
       total_lines += lines
-      puts "[%4d] #{name}" % lines if @opts.verbose?
+      print_each_file(target_dir, name, lines) if @opts.verbose?
+#      puts "[%4d] #{name}" % lines if @opts.verbose?
     }
 
     puts "Total: #{total_lines} lines"
@@ -84,6 +85,13 @@ class App
 
   def count_lines(filepath)
     File.readlines(filepath).size
+  end
+
+  def print_each_file(target_dir, name, lines)
+    abs_parent = File.expand_path(target_dir)
+    abs_name = File.expand_path(name)
+    relative = abs_name.delete_prefix(abs_parent).delete_prefix('/')
+    puts "[%4d] #{relative}" % lines
   end
 end
 
