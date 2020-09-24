@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    kodougu (0.2.5)
+    kodougu (0.2.6)
       slop (~> 4.8)
 
 GEM
