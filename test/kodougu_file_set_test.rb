@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class KodouguFileSetTest < Test::Unit::TestCase
+class KodouguFileSetTest < Minitest::Test
   FIXTURE_PATH = File.expand_path('fixture', __dir__)
 
   def test_that_it_can_find_files_those_have_the_specified_ext

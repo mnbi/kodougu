@@ -3,7 +3,7 @@
 
 require 'test_helper'
 
-class DiffHashTest < Test::Unit::TestCase
+class DiffHashTest < Minitest::Test
   def test_that_empty_hashes_always_has_no_diffs
     diff = Kodougu::DiffHash.new({}, {})
     assert diff.empty?
@@ -19,38 +19,38 @@ class DiffHashTest < Test::Unit::TestCase
   def test_that_compares_a_hash_to_empty
     a = Hash(foo: 1)
     diff = Kodougu::DiffHash.new(a, {})
-    assert_false diff.empty?
+    refute diff.empty?
   end
 
   def test_that_compares_empty_to_a_hash
     b = Hash(foo: 1)
     diff = Kodougu::DiffHash.new({}, b)
-    assert_false diff.empty?
+    refute diff.empty?
   end
 
   def test_that_it_holds_keys
     a = Hash(foo: 1)
     diff = Kodougu::DiffHash.new(a, {})
-    assert_false diff.empty?
-    assert_false diff.keys.empty?
+    refute diff.empty?
+    refute diff.keys.empty?
   end
 
   def test_that_it_holds_a_key
     a = Hash(foo: 1)
     diff = Kodougu::DiffHash.new(a, {})
-    assert_false diff.empty?
+    refute diff.empty?
     assert diff.key?(:foo)
-    assert_false diff.key?(:bar)
+    refute diff.key?(:bar)
   end
 
   def test_that_it_can_be_fetched_difference
     a = Hash(foo: 1)
     diff = Kodougu::DiffHash.new(a, {})
-    assert_false diff.empty?
+    refute diff.empty?
     assert diff.key?(:foo)
 
     v = diff[:foo]
-    assert_false v.nil?
+    refute v.nil?
     v = diff[:bar]
     assert v.nil?
   end
@@ -60,8 +60,8 @@ class DiffHashTest < Test::Unit::TestCase
     b = Hash(foo: 1, bar: 3, baz: 2)
     diff = Kodougu::DiffHash.new(a, b)
 
-    assert_false diff.empty?
-    assert_false diff.key?(:foo)
+    refute diff.empty?
+    refute diff.key?(:foo)
     assert diff.key?(:bar)
     assert diff.key?(:baz)
 
@@ -74,8 +74,8 @@ class DiffHashTest < Test::Unit::TestCase
     b = Hash(foo: 1, bar: 3, hoge: 3)
     diff = Kodougu::DiffHash.new(a, b)
 
-    assert_false diff.empty?
-    assert_false diff.key?(:foo)
+    refute diff.empty?
+    refute diff.key?(:foo)
     assert diff.key?(:bar)
     assert diff.key?(:baz)
     assert diff.key?(:hoge)
@@ -90,10 +90,10 @@ class DiffHashTest < Test::Unit::TestCase
     b = Hash(foo: 1, bar: [2, 1], baz: [3, 4, 5])
     diff = Kodougu::DiffHash.new(a, b)
 
-    assert_false diff.empty?
-    assert_false diff.key?(:foo)
+    refute diff.empty?
+    refute diff.key?(:foo)
     assert diff.key?(:bar)
-    assert_false diff.key?(:baz)
+    refute diff.key?(:baz)
 
     assert_equal [[1, 2], [2, 1]], diff[:bar]
   end
@@ -103,8 +103,8 @@ class DiffHashTest < Test::Unit::TestCase
     b = Hash(foo: 1, bar: 'apple', baz: 'imac', hoge: 'sierra')
     diff = Kodougu::DiffHash.new(a, b)
 
-    assert_false diff.empty?
-    assert_false diff.key?(:foo)
+    refute diff.empty?
+    refute diff.key?(:foo)
 
     h = {}
     diff.each do |pair|

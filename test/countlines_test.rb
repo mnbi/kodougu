@@ -4,13 +4,13 @@
 require 'open3'
 require 'test_helper'
 
-class CountlinesTest < Test::Unit::TestCase
+class CountlinesTest < Minitest::Test
   CL_NAME = 'countlines'
-  EXE_PATH = File.expand_path('../../exe', __FILE__)
+  EXE_PATH = File.expand_path('../exe', __dir__)
   CL_PATH = File.join(EXE_PATH, CL_NAME)
   BUNDLE_EXEC = "bundle exec \'#{CL_PATH}\'"
 
-  FIXTURE_PATH = File.expand_path('../fixture', __FILE__)
+  FIXTURE_PATH = File.expand_path('fixture', __dir__)
 
   def test_that_it_puts_a_message_to_stderr_when_no_argument_is_specified
     cmd = "#{BUNDLE_EXEC}"

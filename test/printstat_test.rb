@@ -4,13 +4,13 @@
 require 'open3'
 require 'test_helper'
 
-class PrintstatTest < Test::Unit::TestCase
+class PrintstatTest < Minitest::Test
   CL_NAME = 'printstat'
-  EXE_PATH = File.expand_path('../../exe', __FILE__)
+  EXE_PATH = File.expand_path('../exe', __dir__)
   CL_PATH = File.join(EXE_PATH, CL_NAME)
   BUNDLE_EXEC = "bundle exec \'#{CL_PATH}\'"
 
-  FIXTURE_PATH = File.expand_path('../fixture', __FILE__)
+  FIXTURE_PATH = File.expand_path('fixture', __dir__)
 
   def test_that_it_puts_a_message_on_error
     cmd = "#{BUNDLE_EXEC} foo"
@@ -41,7 +41,7 @@ class PrintstatTest < Test::Unit::TestCase
     cmd = "#{BUNDLE_EXEC} \'#{FIXTURE_PATH}\'"
     o_str, status = Open3.capture2(cmd)
     assert_equal 0, status.exitstatus
-    assert_false o_str.empty?
+    refute o_str.empty?
   end
 
   def test_that_it_correctly_prints_stats_of_sample_dat

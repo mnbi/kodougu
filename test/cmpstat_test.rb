@@ -4,13 +4,13 @@
 require 'open3'
 require 'test_helper'
 
-class CmpstatTest < Test::Unit::TestCase
+class CmpstatTest < Minitest::Test
   CL_NAME = 'cmpstat'
-  EXE_PATH = File.expand_path('../../exe', __FILE__)
+  EXE_PATH = File.expand_path('../exe', __dir__)
   CL_PATH = File.join(EXE_PATH, CL_NAME)
   BUNDLE_EXEC = "bundle exec \'#{CL_PATH}\'"
 
-  FIXTURE_PATH = File.expand_path('../fixture', __FILE__)
+  FIXTURE_PATH = File.expand_path('fixture', __dir__)
 
   def test_that_it_puts_usage_with_no_arguments
     cmd = "#{BUNDLE_EXEC}"
