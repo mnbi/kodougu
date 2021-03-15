@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    kodougu (0.2.7)
+    kodougu (0.2.8)
       slop (~> 4.8)
 
 GEM
@@ -20,4 +20,4 @@ DEPENDENCIES
   rake (~> 13.0)
 
 BUNDLED WITH
-   2.1.4
+   2.2.3
