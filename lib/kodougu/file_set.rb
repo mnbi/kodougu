@@ -63,10 +63,14 @@ module Kodougu
 
     def ext_match?(mtype, exts)
       sub = mtype.split('/')[1]
-      md = /^x-([\w-]+)/.match(sub)
+      # Most of MIME-type for famous programming languages are looks like:
+      #   text/x-ruby
+      # However, in some cases, the following notation is used:
+      #   text/x-script.python
+      md = /^x-(script\.)?([\w]+)/.match(sub)
       return false unless md
 
-      exec_lang = md[1].to_sym
+      exec_lang = md[2].to_sym
       return false if EXTS_MAP[exec_lang].nil?
       !exts.intersection(EXTS_MAP[exec_lang]).empty?
     end
