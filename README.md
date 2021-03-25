@@ -3,7 +3,7 @@ training to be familiar with using git and GitHub.
 
 # Kodougu
 
-[![Build Status](https://travis-ci.org/mnbi/kodougu.svg?branch=master)](https://travis-ci.org/mnbi/kodougu)
+[![Build Status](https://github.com/mnbi/kodougu/workflows/Build/badge.svg)](https://github.com/mnbi/kodougu/actions?query=workflow%3A"Build")
 
 The word, "kodougu" means small tools in Japanese.
 
